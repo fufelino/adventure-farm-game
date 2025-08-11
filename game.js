@@ -1,63 +1,94 @@
-console.log("Игра 'Гоблинская Ферма: Большое Приключение' загружается!");
-// Базовый код игры будет здесь
-
-// Инициализация SDK
-let yaGames;
-
-// Функция запуска игры после загрузки SDK
-function startGame() {
-    // Здесь ваш основной код игры
-    console.log("SDK загружен, игра запускается!");
-    document.getElementById('game-container').innerHTML = "<h1>Добро пожаловать в игру!</h1>";
-}
-
-// Основная загрузка
-YaGames
-    .init()
-    .then(ysdk => {
-        yaGames = ysdk;
-        console.log("Yandex SDK успешно инициализирован");
-        startGame();
-    })
-    .catch(error => {
-        console.error("Ошибка загрузки SDK:", error);
-        // Запасной вариант для локального тестирования
-        startGame();
-    });
-
-    function authPlayer() {
-    yaGames.auth.openAuthDialog()
-        .then(() => {
-            console.log("Авторизация успешна");
-            return yaGames.getPlayer();
-        })
-        .then(player => {
-            console.log("Игрок:", player.getName());
-        });
-}
-
-function saveGame(data) {
-    yaGames.player.setData(data, true)
-        .then(() => console.log("Данные сохранены"))
-        .catch(err => console.error("Ошибка сохранения:", err));
-}
-
-function loadGame() {
-    yaGames.player.getData()
-        .then(data => console.log("Загруженные данные:", data));
-}
-
-function showRewardedAd() {
-    yaGames.adv.showRewardedAd({
-        callbacks: {
-            onOpen: () => console.log("Реклама открыта"),
-            onClose: (wasShown) => {
-                if (wasShown) {
-                    console.log("Игрок посмотрел рекламу, награждаем");
-                    // Ваш код награды
-                }
-            },
-            onError: (err) => console.error("Ошибка рекламы:", err)
+// Конфиг Phaser
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    parent: 'game-container',
+    backgroundColor: '#2d2d2d',
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    },
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+    },
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0 },
+            debug: false
         }
+    }
+};
+
+let game;
+let playerData = {};
+
+// Инициализация игры
+async function initGame() {
+    // Инициализация SDK
+    await yandexSDK.init();
+    
+    // Загрузка данных игрока
+    playerData = await yandexSDK.loadPlayerData();
+    
+    // Создание экземпляра игры
+    game = new Phaser.Game(config);
+}
+
+function preload() {
+    this.load.setBaseURL('assets/');
+    this.load.image('background', 'images/bg.png');
+    this.load.image('character', 'images/character.png');
+}
+
+function create() {
+    // Создание игрового мира
+    this.add.image(400, 300, 'background');
+    
+    // Создание кнопки рекламы
+    createAdButton.call(this);
+    
+    // Создание UI
+    createUI.call(this);
+    
+    // Автосохранение каждые 30 сек
+    setInterval(() => yandexSDK.saveGame(playerData), 30000);
+}
+
+function update() {
+    // Игровая логика
+}
+
+function createAdButton() {
+    const btn = this.add.rectangle(400, 500, 300, 50, 0x4a2d82)
+        .setInteractive()
+        .on('pointerdown', async () => {
+            const success = await yandexSDK.showRewardedAd();
+            if (success) {
+                playerData.coins = (playerData.coins || 0) + 50;
+                updateUI.call(this);
+            }
+        });
+    
+    this.add.text(400, 500, 'Получить 50 монет', {
+        fontSize: '20px',
+        color: '#ffffff'
+    }).setOrigin(0.5);
+}
+
+function createUI() {
+    this.coinsText = this.add.text(20, 20, `Монеты: ${playerData.coins || 0}`, {
+        fontSize: '24px',
+        color: '#ffffff'
     });
 }
+
+function updateUI() {
+    this.coinsText.setText(`Монеты: ${playerData.coins || 0}`);
+}
+
+// Запуск игры
+document.addEventListener('DOMContentLoaded', initGame);
