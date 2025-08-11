@@ -16,4 +16,8 @@ build/
 
 # Логи и временные файлы
 *.log
-*.tmp 
+*.tmp
+
+# Windows-специфичные файлы
+desktop.ini
+ehthumbs.db
