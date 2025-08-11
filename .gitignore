@@ -1,0 +1,49 @@
+```gitignore
+# Файлы IDE и редакторов
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Логи и временные файлы
+*.log
+*.tmp
+*.bak
+*.pid
+*.DS_Store
+Thumbs.db
+
+# Файлы сборки и зависимости
+node_modules/
+dist/
+build/
+out/
+*.exe
+*.dll
+*.so
+*.a
+
+# Файлы конфигурации (если не нужны в репозитории)
+*.local
+*.env
+*.env.local
+.env.development
+.env.production
+
+# Файлы проекта Яндекс.Игры (если используются)
+.yarn/
+package-lock.json
+yarn.lock
+
+# Автогенерируемые файлы
+*.min.js
+*.min.css
+*.bundled.*
+
+# Пользовательские файлы/папки (добавьте свои)
+/assets/temp/
+/saves/
+/config.json
+```"" 
